@@ -7,14 +7,24 @@ algorithms.
  Store weather dataset for multiple cities over time.
  # Implement:
 o Search by date/city
+
 o Sort by temperature/humidity
+
 o Find top 5 hottest/coldest days
-o Graph generation optional
+
+o Graph generation (optional)
+
 Must be menu-driven.
 3. Dataset Structure
+
 Table: WeatherRecords
+
 RecordID (INT)
+
 City (VARCHAR)
+
 Temperature (FLOAT)
+
 Humidity (INT)
+
 Date

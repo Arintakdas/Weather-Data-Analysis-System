@@ -14,7 +14,8 @@ o Find top 5 hottest/coldest days
 
 o Graph generation (optional)
 
-Must be menu-driven.
+      Must be menu-driven.
+
 3. Dataset Structure
 
 Table: WeatherRecords

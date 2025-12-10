@@ -36,7 +36,6 @@ extern int count;
 extern const char* CITY_NODES[MAX_CITIES];
 extern int adjMatrix[MAX_CITIES][MAX_CITIES];
 
-// --- FUNCTION PROTOTYPES ---
 void loadCSV();
 void saveCSV();
 void clearScreen();
@@ -44,10 +43,8 @@ void pause();
 void showDashboard();
 void predictWeather();
 
-// TEAM LEADER FUNCTIONS (Your Part)
 void searchRecords(char *query);
 void quickSort(WeatherRecord arr[], int low, int high, int key, bool ascending);
 void showTop5(bool hottest);
-void showStormImpact();  // prototype only – implementation will be provided elsewhere
-
+void showStormImpact(); 
 #endif

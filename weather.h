@@ -11,7 +11,7 @@
 #define CITY_LEN 50
 #define DATE_LEN 15
 #define FILE_NAME "weather_data.csv"
-#define MAX_CITIES 5
+#define MAX_CITIES 25
 
 // --- COLORS ---
 #define COLOR_RED     "\x1b[31m"

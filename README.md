@@ -6,15 +6,13 @@ algorithms.
 2. Detailed Specifications
  Store weather dataset for multiple cities over time.
  # Implement:
-o Search by date/city
-
-o Sort by temperature/humidity
-
-o Find top 5 hottest/coldest days
-
-o Graph generation (optional)
-
-      Must be menu-driven.
+     o Search by date/city
+     
+     o Sort by temperature/humidity
+     
+     o Find top 5 hottest/coldest days
+     
+     o Graph generation (optional)   
 
 3. Dataset Structure
 
@@ -22,7 +20,10 @@ Table: WeatherRecords
 
 RecordID (INT)
 
-City (VARCHAR)
+City (VARCHAR)     
+ # Graph:
+ 
+<img width="340" height="372" alt="image" src="https://github.com/user-attachments/assets/0bd05383-4928-44aa-9c23-fa7c5a2f14f6" />
 
 
 ---
@@ -141,3 +142,7 @@ char date[15];
 };
 
 ---
+
+
+
+

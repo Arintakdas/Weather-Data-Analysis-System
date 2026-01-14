@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <title>Weather Analytics | Pro</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@400;700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+  <div class="glass-container">
+    <header>
+      <div class="logo">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+          class="feather feather-cloud-drizzle">
+          <line x1="8" y1="19" x2="8" y2="21"></line>
+          <line x1="8" y1="13" x2="8" y2="15"></line>
+          <line x1="16" y1="19" x2="16" y2="21"></line>
+          <line x1="16" y1="13" x2="16" y2="15"></line>
+          <line x1="12" y1="21" x2="12" y2="23"></line>
+          <line x1="12" y1="15" x2="12" y2="17"></line>
+          <path d="M20 16.58A5 5 0 0 0 18 7h-1.26A8 8 0 1 0 4 15.25"></path>
+        </svg>
+        <span>Weather<span class="highlight">Analytics</span></span>
+      </div>
+      <div class="status-indicator">
+        <span class="dot"></span> System Online
+      </div>
+    </header>
+
+    <main class="dashboard-grid">
+      <section class="panel controls-panel">
+        <h2>Control Center</h2>
+
+        <div class="control-group">
+          <label>Data Management</label>
+          <div class="btn-group">
+            <button id="btnLoad" class="btn primary-btn">
+              <span class="icon"></span> Load Data
+            </button>
+            <button id="btnSave" class="btn secondary-btn">
+              <span class="icon"></span> Save Data
+            </button>
+          </div>
+        </div>
+
+        <div class="control-group">
+          <label>Analytics</label>
+          <div class="btn-group">
+            <button id="btnDashboard" class="btn accent-btn">Dashboard</button>
+            <button id="btnTopHot" class="btn">Top 5 Hottest</button>
+            <button id="btnTopCold" class="btn">Top 5 Coldest</button>
+          </div>
+          <div class="btn-group">
+            <button id="btnTopHotPerCity" class="btn small-btn">Top 5 Hot/City</button>
+            <button id="btnTopColdPerCity" class="btn small-btn">Top 5 Cold/City</button>
+          </div>
+        </div>
+
+        <div class="control-group">
+          <label>Search Tools</label>
+          <div class="input-group">
+            <input id="cityQ" placeholder="Enter City Name..." />
+            <button id="btnSearchCity" class="btn icon-only-btn">search</button>
+          </div>
+          <div class="input-group">
+            <input id="dateQ" placeholder="YYYY-MM-DD" />
+            <button id="btnSearchDate" class="btn icon-only-btn">search</button>
+          </div>
+        </div>
+
+        <div class="control-group storm-group">
+          <label class="danger-text"> Storm Simulation</label>
+          <div class="input-group">
+            <input id="stormIdx" type="number" placeholder="City Index (0-224)" />
+            <button id="btnStorm" class="btn danger-btn">EXECUTE</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel monitor-panel">
+        <div class="monitor-header">
+          <h2>System Output</h2>
+          <div class="view-toggles">
+            <button id="btnViewData" class="toggle-btn active" title="Data Grid">Data Grid</button>
+            <button id="btnViewVisual" class="toggle-btn" title="Visual Dashboard">Dashboard</button>
+          </div>
+          <span class="monitor-badge">LIVE FEED</span>
+        </div>
+
+      
+        <div id="data-view" class="table-window">
+          <div class="table-wrapper">
+            <table id="data-table" class="styled-table">
+              <thead>
+                <tr id="table-head">
+                 
+                </tr>
+              </thead>
+              <tbody id="table-body">
+              
+              </tbody>
+            </table>
+            <div id="status-message" class="empty-state">
+              System Ready. Load data to begin.
+            </div>
+          </div>
+        </div>
+
+        <div id="visual-view" class="visual-dashboard" style="display: none;">
+          <div class="kpi-grid">
+            <div class="kpi-card hot">
+              <div class="kpi-icon">hot</div>
+              <div class="kpi-info">
+                <h3>Hottest City</h3>
+                <div id="kpi-hot-val" class="kpi-value">--</div>
+                <div id="kpi-hot-city" class="kpi-sub">--</div>
+              </div>
+            </div>
+            <div class="kpi-card cold">
+              <div class="kpi-icon">cold</div>
+              <div class="kpi-info">
+                <h3>Coldest City</h3>
+                <div id="kpi-cold-val" class="kpi-value">--</div>
+                <div id="kpi-cold-city" class="kpi-sub">--</div>
+              </div>
+            </div>
+            <div class="kpi-card avg">
+              <div class="kpi-icon">avg</div>
+              <div class="kpi-info">
+                <h3>Avg Temp</h3>
+                <div id="kpi-avg-val" class="kpi-value">--</div>
+                <div class="kpi-sub">Global Average</div>
+              </div>
+            </div>
+            <div class="kpi-card total">
+              <div class="kpi-icon">files</div>
+              <div class="kpi-info">
+                <h3>Total Records</h3>
+                <div id="kpi-total-val" class="kpi-value">--</div>
+                <div class="kpi-sub">Datapoints</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="charts-container">
+            <div class="chart-wrapper">
+              <canvas id="tempChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="main.js"></script>
+</body>
+
+</html>

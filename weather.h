@@ -6,14 +6,14 @@
 #include <string.h>
 #include <stdbool.h>
 
-// --- CONSTANTS ---
+
 #define MAX_RECORDS 200
 #define CITY_LEN 50
 #define DATE_LEN 15
 #define FILE_NAME "weather_data.csv"
 #define MAX_CITIES 25
 
-// --- COLORS ---
+
 #define COLOR_RED     "\x1b[31m"
 #define COLOR_GREEN   "\x1b[32m"
 #define COLOR_CYAN    "\x1b[36m"
@@ -21,7 +21,7 @@
 #define COLOR_RESET   "\x1b[0m"
 #define BOLD          "\x1b[1m"
 
-// --- DATA STRUCTURE ---
+
 typedef struct {
     int id;
     char city[CITY_LEN];
@@ -30,7 +30,7 @@ typedef struct {
     char date[DATE_LEN];
 } WeatherRecord;
 
-// --- SHARED GLOBALS ---
+
 extern WeatherRecord db[MAX_RECORDS];
 extern int count;
 extern const char* CITY_NODES[MAX_CITIES];

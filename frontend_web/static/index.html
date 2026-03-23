@@ -3,164 +3,207 @@
 
 <head>
   <meta charset="utf-8" />
-  <title>Weather Analytics | Pro</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@400;700&display=swap"
-    rel="stylesheet">
+  <title>MSN Weather Clone</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
-
-  <div class="glass-container">
-    <header>
-      <div class="logo">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-          class="feather feather-cloud-drizzle">
-          <line x1="8" y1="19" x2="8" y2="21"></line>
-          <line x1="8" y1="13" x2="8" y2="15"></line>
-          <line x1="16" y1="19" x2="16" y2="21"></line>
-          <line x1="16" y1="13" x2="16" y2="15"></line>
-          <line x1="12" y1="21" x2="12" y2="23"></line>
-          <line x1="12" y1="15" x2="12" y2="17"></line>
-          <path d="M20 16.58A5 5 0 0 0 18 7h-1.26A8 8 0 1 0 4 15.25"></path>
+  <!-- TOP NAV -->
+  <nav class="top-nav">
+    <div class="nav-left">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24" fill="none" class="msn-logo-svg" width="28" height="28">
+          <path
+            d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"
+            fill="#38bdf8" />
         </svg>
-        <span>Weather<span class="highlight">Analytics</span></span>
       </div>
-      <div class="status-indicator">
-        <span class="dot"></span> System Online
-      </div>
-    </header>
+      <span class="msn-brand">msn weather</span>
+    </div>
 
-    <main class="dashboard-grid">
-      <section class="panel controls-panel">
-        <h2>Control Center</h2>
+    <div class="search-container">
+      <input type="text" id="citySearchbar" placeholder="Search for location (City)" />
+      <button id="btnSearchNav" class="search-icon-btn">
+        <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+      </button>
+    </div>
 
-        <div class="control-group">
-          <label>Data Management</label>
-          <div class="btn-group">
-            <button id="btnLoad" class="btn primary-btn">
-              <span class="icon"></span> Load Data
-            </button>
-            <button id="btnSave" class="btn secondary-btn">
-              <span class="icon"></span> Save Data
-            </button>
-          </div>
-        </div>
+    <div class="nav-right">
+      <button id="btnSettings" class="icon-btn">⚙️</button>
+    </div>
+  </nav>
 
-        <div class="control-group">
-          <label>Analytics</label>
-          <div class="btn-group">
-            <button id="btnDashboard" class="btn accent-btn">Dashboard</button>
-            <button id="btnTopHot" class="btn">Top 5 Hottest</button>
-            <button id="btnTopCold" class="btn">Top 5 Coldest</button>
-          </div>
-          <div class="btn-group">
-            <button id="btnTopHotPerCity" class="btn small-btn">Top 5 Hot/City</button>
-            <button id="btnTopColdPerCity" class="btn small-btn">Top 5 Cold/City</button>
-          </div>
-        </div>
-
-        <div class="control-group">
-          <label>Search Tools</label>
-          <div class="input-group">
-            <input id="cityQ" placeholder="Enter City Name..." />
-            <button id="btnSearchCity" class="btn icon-only-btn">search</button>
-          </div>
-          <div class="input-group">
-            <input id="dateQ" placeholder="YYYY-MM-DD" />
-            <button id="btnSearchDate" class="btn icon-only-btn">search</button>
-          </div>
-        </div>
-
-        <div class="control-group storm-group">
-          <label class="danger-text"> Storm Simulation</label>
-          <div class="input-group">
-            <input id="stormIdx" type="number" placeholder="City Index (0-224)" />
-            <button id="btnStorm" class="btn danger-btn">EXECUTE</button>
-          </div>
-        </div>
-      </section>
-
-      <section class="panel monitor-panel">
-        <div class="monitor-header">
-          <h2>System Output</h2>
-          <div class="view-toggles">
-            <button id="btnViewData" class="toggle-btn active" title="Data Grid">Data Grid</button>
-            <button id="btnViewVisual" class="toggle-btn" title="Visual Dashboard">Dashboard</button>
-          </div>
-          <span class="monitor-badge">LIVE FEED</span>
-        </div>
-
-      
-        <div id="data-view" class="table-window">
-          <div class="table-wrapper">
-            <table id="data-table" class="styled-table">
-              <thead>
-                <tr id="table-head">
-                 
-                </tr>
-              </thead>
-              <tbody id="table-body">
-              
-              </tbody>
-            </table>
-            <div id="status-message" class="empty-state">
-              System Ready. Load data to begin.
-            </div>
-          </div>
-        </div>
-
-        <div id="visual-view" class="visual-dashboard" style="display: none;">
-          <div class="kpi-grid">
-            <div class="kpi-card hot">
-              <div class="kpi-icon">hot</div>
-              <div class="kpi-info">
-                <h3>Hottest City</h3>
-                <div id="kpi-hot-val" class="kpi-value">--</div>
-                <div id="kpi-hot-city" class="kpi-sub">--</div>
-              </div>
-            </div>
-            <div class="kpi-card cold">
-              <div class="kpi-icon">cold</div>
-              <div class="kpi-info">
-                <h3>Coldest City</h3>
-                <div id="kpi-cold-val" class="kpi-value">--</div>
-                <div id="kpi-cold-city" class="kpi-sub">--</div>
-              </div>
-            </div>
-            <div class="kpi-card avg">
-              <div class="kpi-icon">avg</div>
-              <div class="kpi-info">
-                <h3>Avg Temp</h3>
-                <div id="kpi-avg-val" class="kpi-value">--</div>
-                <div class="kpi-sub">Global Average</div>
-              </div>
-            </div>
-            <div class="kpi-card total">
-              <div class="kpi-icon">files</div>
-              <div class="kpi-info">
-                <h3>Total Records</h3>
-                <div id="kpi-total-val" class="kpi-value">--</div>
-                <div class="kpi-sub">Datapoints</div>
-              </div>
-            </div>
-          </div>
-
-          <div class="charts-container">
-            <div class="chart-wrapper">
-              <canvas id="tempChart"></canvas>
-            </div>
-          </div>
-        </div>
-      </section>
-    </main>
+  <!-- SECONDARY NAV TABS -->
+  <div class="scroll-tabs-container">
+    <div class="tabs-list">
+      <button class="msn-tab active" id="btnTabOverview">Overview</button>
+      <button class="msn-tab" id="btnTabData">Data Table</button>
+      <button class="msn-tab" id="btnTabRadar">Storm Radar</button>
+      <button class="msn-tab" id="btnTabSystem">System I/O</button>
+    </div>
   </div>
 
+  <div id="toast-container"></div>
+  <div id="status-indicator"></div>
+
+  <!-- MAIN SCROLLABLE CONTENT -->
+  <main class="content-body">
+
+    <!-- OVERVIEW TAB -->
+    <div class="view-section" id="view-overview">
+
+      <!-- HERO CARD mimicking MSN's current weather block -->
+      <div class="msn-hero-card">
+        <div class="hero-top">
+          <span class="hero-location" id="hero-title">Indian Weather Network <button class="action-btn-small"
+              id="btnRefreshHero">Refresh</button></span>
+          <span class="hero-alert"><svg viewBox="0 0 24 24" width="14" fill="#fbbf24">
+              <path d="M12 2L1 21h22L12 2zm0 3.8l8.2 14.2H3.8L12 5.8zm-1 6h2v4h-2v-4zm0 6h2v2h-2v-2z" />
+            </svg> Monitoring Active</span>
+        </div>
+        <div class="hero-content">
+          <div class="hero-weather-main">
+            <div class="hero-icon">
+              <svg viewBox="0 0 24 24" fill="#fbbf24" width="60" height="60">
+                <circle cx="12" cy="12" r="5" />
+                <path
+                  d="M12 2v3m0 14v3m10-10h-3M5 12H2m17.07-7.07l-2.12 2.12M7.05 16.95l-2.12 2.12M19.07 19.07l-2.12-2.12M7.05 7.05L4.93 4.93" />
+              </svg>
+            </div>
+            <div class="hero-temp-block">
+              <div class="hero-temp-val" id="kpi-avg-val">--</div>
+              <div class="hero-temp-unit">°C</div>
+            </div>
+            <div class="hero-desc-block">
+              <div class="hero-condition">Average Temperature</div>
+              <div class="hero-subinfo">Records loaded: <span id="kpi-total-val"
+                  style="color:white; font-weight:600;">--</span></div>
+            </div>
+          </div>
+          <!-- Optional right side embedded mini radar image/div -->
+          <div class="hero-map-preview">
+            <button id="heroGoToRadar" class="hero-map-btn">Open Map</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- WIDGET GRID -->
+      <div class="msn-widget-grid">
+
+        <div class="msn-card">
+          <div class="card-head">Hottest City</div>
+          <div class="card-val-block">
+            <div class="card-val text-red" id="kpi-hot-val">--</div><span class="card-unit">°C</span>
+          </div>
+          <div class="card-desc" id="kpi-hot-city">--</div>
+        </div>
+
+        <div class="msn-card">
+          <div class="card-head">Coldest City</div>
+          <div class="card-val-block">
+            <div class="card-val text-blue" id="kpi-cold-val">--</div><span class="card-unit">°C</span>
+          </div>
+          <div class="card-desc" id="kpi-cold-city">--</div>
+        </div>
+
+        <!-- Date Search Box disguised as a card -->
+        <div class="msn-card">
+          <div class="card-head">Date Search</div>
+          <div class="card-interactive">
+            <input type="text" id="dateSearchInput" class="msn-input" placeholder="YYYY-MM-DD" />
+            <button id="btnSearchDateCard" class="msn-action-btn">Search Date</button>
+          </div>
+          <div class="card-desc">Jump straight to historical grid</div>
+        </div>
+
+        <!-- Top 5 Actions disguised as a card -->
+        <div class="msn-card span-2">
+          <div class="card-head">Analytics Queries</div>
+          <input type="text" id="top5CityInput" class="msn-input" style="margin-bottom: 12px; max-width: 300px;" placeholder="Optional: Enter a specific City Name..." />
+          <div class="analytics-buttons">
+            <button class="msn-action-btn" id="btnTopHotCard">Top 5 Records/city (Hot)</button>
+            <button class="msn-action-btn" id="btnTopColdCard">Top 5 Records/city (Cold)</button>
+            <button class="msn-action-btn outline" id="btnTopHotCityCard">Top 5 Cities (Hot)</button>
+            <button class="msn-action-btn outline" id="btnTopColdCityCard">Top 5 Cities (Cold)</button>
+          </div>
+        </div>
+
+        <!-- Chart Card -->
+        <div class="msn-card span-full chart-card-container">
+          <div class="card-head"
+            style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+            <span>24-Hour Temperature Trend</span>
+            <div style="display:flex; gap:10px; align-items:center;">
+              <input type="text" id="trendCityInput" class="msn-input"
+                style="margin:0; padding:6px 12px; width:150px; flex:1;" placeholder="City" value="Mumbai" />
+              <input type="text" id="trendDateInput" class="msn-input"
+                style="margin:0; padding:6px 12px; width:150px; flex:1;" placeholder="YYYY-MM-DD" value="2025-12-11" />
+              <button id="btnFetchTrend" class="action-btn-small" style="padding:6px 16px;">Plot</button>
+            </div>
+          </div>
+          <div class="chart-canvas-wrapper">
+            <canvas id="tempChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- DATA TABLE VIEW -->
+    <div class="view-section" id="view-data" style="display:none;">
+      <div class="msn-card no-padding data-view-card">
+        <div class="card-head with-padding">Database Explorer</div>
+        <div class="table-scroll">
+          <table id="data-table" class="msn-table">
+            <thead id="table-head"></thead>
+            <tbody id="table-body"></tbody>
+          </table>
+          <div id="table-empty-state" class="table-empty">No data available. Perform a search or analytics query to
+            populate.</div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- RADAR GRAPH VIEW -->
+    <div class="view-section" id="view-radar" style="display:none;">
+      <div class="msn-card radar-card-wrapper">
+        <div class="radar-top-controls">
+          <span class="radar-title">Interactive Storm Radar (Graph DSA)</span>
+          <div class="radar-inputs">
+            <input type="text" id="stormCityInput" class="msn-input" placeholder="City Name or Index..." />
+            <button id="btnSimulateStorm" class="msn-action-btn warning">Simulate Impact</button>
+          </div>
+        </div>
+        <div id="network-container" class="msn-network-box"></div>
+      </div>
+    </div>
+
+
+    <!-- CONTROL ROOM VIEW (For Load, Save, Top 5) -->
+    <div class="view-section" id="view-system" style="display:none;">
+      <div class="msn-widget-grid">
+        <div class="msn-card">
+          <div class="card-head">Load Dataset</div>
+          <p class="card-desc text-normal" style="margin-bottom:12px;">Load from weather_data_saved.csv memory bank.</p>
+          <button id="btnSysLoad" class="msn-action-btn">Load Data</button>
+        </div>
+        <div class="msn-card">
+          <div class="card-head">Save Dataset</div>
+          <p class="card-desc text-normal" style="margin-bottom:12px;">Write current state to weather_data_saved.csv.
+          </p>
+          <button id="btnSysSave" class="msn-action-btn outline">Save Data</button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
   <script src="main.js"></script>
 </body>
 

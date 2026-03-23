@@ -1,257 +1,357 @@
-let currentView = 'data'; 
 let statsData = null;
 let chartInstance = null;
+let networkInstance = null;
 
-const tableHead = document.getElementById('table-head');
-const tableBody = document.getElementById('table-body');
-const statusMsg = document.getElementById('status-message');
-const dataView = document.getElementById('data-view');
-const visualView = document.getElementById('visual-view');
-const btnData = document.getElementById('btnViewData');
-const btnVisual = document.getElementById('btnViewVisual');
+const ind = document.getElementById('status-indicator');
+const toastContainer = document.getElementById('toast-container');
+const tBody = document.getElementById('table-body');
+const tHead = document.getElementById('table-head');
+const tEmpty = document.getElementById('table-empty-state');
 
-function showToast(msg, type = 'success') {
-  const toast = document.createElement('div');
-  toast.className = `toast ${type}`;
-  toast.innerHTML = `<span>${type === 'success' ? '✔' : '✖'}</span> ${msg}`;
-  document.body.appendChild(toast);
+function showStatus(msg) {
+  ind.style.display = 'block';
+  ind.innerText = '⏳ ' + msg;
+}
+function hideStatus() { ind.style.display = 'none'; }
 
-  
-  toast.offsetHeight;
-  toast.classList.add('show');
-
-  setTimeout(() => {
-    toast.classList.remove('show');
-    setTimeout(() => toast.remove(), 300);
-  }, 3000);
+function showToast(msg, type) {
+  const t = document.createElement('div');
+  t.className = 'toast-msg';
+  t.style.borderLeft = type === 'error' ? '4px solid #f87171' : '4px solid #38bdf8';
+  t.innerText = msg;
+  toastContainer.appendChild(t);
+  setTimeout(() => t.remove(), 4000);
 }
 
-function parseToTable(text) {
+// ─── TAB LOGIC ─────────────────────────────────────────
+const views = {
+  'overview': document.getElementById('view-overview'),
+  'data':     document.getElementById('view-data'),
+  'radar':    document.getElementById('view-radar'),
+  'system':   document.getElementById('view-system')
+};
+const tabBtns = {
+  'overview': document.getElementById('btnTabOverview'),
+  'data':     document.getElementById('btnTabData'),
+  'radar':    document.getElementById('btnTabRadar'),
+  'system':   document.getElementById('btnTabSystem')
+};
 
-  tableHead.innerHTML = '';
-  tableBody.innerHTML = '';
+function switchTab(target) {
+  Object.keys(views).forEach(k => {
+    views[k].style.display = (k === target) ? 'block' : 'none';
+    tabBtns[k].classList.toggle('active', k === target);
+  });
+}
 
-  if (!text) {
-    statusMsg.style.display = 'block';
-    statusMsg.innerText = 'No Data Available';
+Object.keys(tabBtns).forEach(k => tabBtns[k].onclick = () => switchTab(k));
+
+document.getElementById('heroGoToRadar').onclick = () => switchTab('radar');
+document.getElementById('btnRefreshHero').onclick = () => fetchDashboard();
+
+// ─── TABLE PARSER ──────────────────────────────────────
+// Handles ANY pipe-separated output from C backend, no hard-coded header detection
+function parseTable(text) {
+  tHead.innerHTML = '';
+  tBody.innerHTML = '';
+
+  if (!text || !text.trim()) {
+    tEmpty.style.display = 'block';
     return;
   }
 
- 
-  const cleanText = text.replace(/\u001b\[[0-9;]*m/g, '');
-  const lines = cleanText.split('\n').filter(l => l.trim() !== '');
-
-
-  const isTable = lines.some(l => l.includes('|'));
-
-  if (!isTable) {
- 
-    statusMsg.style.display = 'block';
-    statusMsg.innerText = cleanText;
-    if (cleanText.length < 100) showToast(cleanText, 'success');
+  // Strip ANSI color codes
+  const clean = text.replace(/\u001b\[[0-9;]*m/g, '').replace(/\r/g, '');
+  const lines = clean.split('\n').filter(x => x.trim());
+  
+  // Check if any line has pipe characters
+  const pipeLines = lines.filter(l => l.includes('|') && !l.match(/^[-+| ]+$/));
+  
+  if (pipeLines.length === 0) {
+    // No table data — show raw text as notification
+    tEmpty.style.display = 'block';
+    tEmpty.innerText = lines[0] || 'No data found.';
+    if (lines[0] && lines[0].length < 120) showToast(lines[0]);
     return;
   }
 
-  statusMsg.style.display = 'none';
+  tEmpty.style.display = 'none';
 
- 
-  let headersFound = false;
-
-  lines.forEach(line => {
-   
-    if (line.match(/^[-+\| ]+$/)) return;
-
+  // First pipe line = header
+  let isFirst = true;
+  pipeLines.forEach(line => {
     const cols = line.split('|').map(c => c.trim()).filter(c => c !== '');
     if (cols.length === 0) return;
 
-    if (!headersFound && (cols[0].toLowerCase() === 'id' || cols[0].toLowerCase() === 'recordid' || line.includes('ID'))) {
-     
-      cols.forEach(h => {
+    const tr = document.createElement('tr');
+    if (isFirst) {
+      cols.forEach(c => {
         const th = document.createElement('th');
-        th.innerText = h;
-        tableHead.appendChild(th);
+        th.innerText = c;
+        tr.appendChild(th);
       });
-      headersFound = true;
+      tHead.appendChild(tr);
+      isFirst = false;
     } else {
-     
-      const tr = document.createElement('tr');
-      cols.forEach(d => {
+      cols.forEach(c => {
         const td = document.createElement('td');
-        td.innerText = d;
+        td.innerText = c;
         tr.appendChild(td);
       });
-      tableBody.appendChild(tr);
+      tBody.appendChild(tr);
     }
   });
-
-  }
-
-function switchView(view) {
-  currentView = view;
-  if (view === 'data') {
-    dataView.style.display = 'flex';
-    visualView.style.display = 'none';
-    btnData.classList.add('active');
-    btnVisual.classList.remove('active');
-  } else {
-    dataView.style.display = 'none';
-    visualView.style.display = 'flex';
-    btnData.classList.remove('active');
-    btnVisual.classList.add('active');
-    if (statsData) renderDashboard(statsData);
-  }
 }
 
-btnData.onclick = () => switchView('data');
-btnVisual.onclick = () => switchView('visual');
-
-async function api(path) {
-
-  statusMsg.style.display = 'block';
-  statusMsg.innerHTML = '<span class="dot"></span> Processing...';
-
+// ─── API HELPER ────────────────────────────────────────
+async function api(path, gotoTab) {
+  showStatus('Loading...');
   try {
     const res = await fetch(path);
     if (!res.ok) {
-      const err = await res.json().catch(() => ({ error: 'unknown' }));
-      showToast(`Error: ${JSON.stringify(err)}`, 'error');
-      statusMsg.innerText = 'Request Failed';
-      return null;
+      const err = await res.json().catch(() => ({}));
+      showToast('Error: ' + (err.error || res.status), 'error');
+      hideStatus(); return null;
     }
-    const j = await res.json();
-
-    // Parse output to Table
-    if (j.output) parseToTable(j.output);
-
-    if (path.includes('dashboard')) {
-      fetchDashboardStats();
-    }
-    return j;
+    const json = await res.json();
+    if (json.output) parseTable(json.output);
+    hideStatus();
+    if (gotoTab) switchTab(gotoTab);
+    return json;
   } catch (e) {
-    showToast('Connection Failed', 'error');
-    statusMsg.innerText = 'Connection Error';
+    showToast('Cannot reach backend server.', 'error');
+    hideStatus(); return null;
   }
 }
 
-async function fetchDashboardStats() {
+// ─── DASHBOARD ─────────────────────────────────────────
+async function fetchDashboard() {
+  showStatus('Syncing stats...');
   try {
     const res = await fetch('/api/dashboard_json');
-    if (res.ok) {
-      const json = await res.json();
-      try {
-        const raw = json.output;
-        const start = raw.indexOf('{');
-        const end = raw.lastIndexOf('}');
+    if (!res.ok) { hideStatus(); return; }
+    const json = await res.json();
+    if (!json.output) { hideStatus(); return; }
 
-        if (start !== -1 && end !== -1) {
-          const jsonStr = raw.substring(start, end + 1);
-          statsData = JSON.parse(jsonStr);
-          if (currentView === 'visual') renderDashboard(statsData);
-        }
-      } catch (err) {
-        console.error("Failed to parse dashboard JSON", err);
-      }
-    }
-  } catch (e) { console.error(e); }
+    const raw = json.output;
+    const s = raw.indexOf('{'), e = raw.lastIndexOf('}');
+    if (s === -1 || e === -1) { hideStatus(); return; }
+
+    statsData = JSON.parse(raw.substring(s, e + 1));
+    renderDashboard(statsData);
+  } catch (err) {
+    console.error('Dashboard fetch failed:', err);
+  }
+  hideStatus();
 }
 
-function renderDashboard(data) {
-  if (!data) return;
+function renderDashboard(d) {
+  if (!d) return;
 
-  document.getElementById('kpi-hot-val').innerText = data.hottest ? `${data.hottest.temp.toFixed(1)}°C` : '--';
-  document.getElementById('kpi-hot-city').innerText = data.hottest ? data.hottest.city : '--';
+  const safeSet = (id, val) => {
+    const el = document.getElementById(id);
+    if (el) el.innerText = val;
+  };
 
-  document.getElementById('kpi-cold-val').innerText = data.coldest ? `${data.coldest.temp.toFixed(1)}°C` : '--';
-  document.getElementById('kpi-cold-city').innerText = data.coldest ? data.coldest.city : '--';
+  safeSet('kpi-avg-val',   d.avg_temp  ? d.avg_temp.toFixed(1) : '--');
+  safeSet('kpi-total-val', d.total || '--');
+  safeSet('kpi-hot-val',   d.hottest ? d.hottest.temp.toFixed(1) : '--');
+  safeSet('kpi-hot-city',  d.hottest ? d.hottest.city : '--');
+  safeSet('kpi-cold-val',  d.coldest ? d.coldest.temp.toFixed(1) : '--');
+  safeSet('kpi-cold-city', d.coldest ? d.coldest.city : '--');
 
-  document.getElementById('kpi-avg-val').innerText = data.avg_temp ? `${data.avg_temp.toFixed(1)}°C` : '--';
-  document.getElementById('kpi-total-val').innerText = data.total || '--';
+  // The chart logic is moved to plotTrend() below!
+}
 
-  const ctx = document.getElementById('tempChart').getContext('2d');
+// ─── DYNAMIC 24-HOUR TREND CHART ────────────────────────
+async function plotTrend(city, date) {
+  const defaultData = Array(24).fill(0);
+  let plotData = defaultData;
+  let label = `Loading data...`;
 
+  showStatus('Fetching trend...');
+  try {
+      const res = await fetch(`/api/trend?city=${encodeURIComponent(city)}&date=${encodeURIComponent(date)}`);
+      if (res.ok) {
+          const j = await res.json();
+          const raw = j.output || '';
+          const s = raw.indexOf('{');
+          const e = raw.lastIndexOf('}');
+          if (s !== -1) {
+              const data = JSON.parse(raw.substring(s, e + 1));
+              if (!data.error && data.hourly) {
+                  plotData = data.hourly;
+                  label = `24-Hour Trend for ${data.city} (${data.date})`;
+                  
+                  // Update Dashboard Hero Card
+                  const avgEl = document.getElementById('kpi-avg-val');
+                  if(avgEl && data.avg_temp !== undefined) avgEl.innerText = data.avg_temp.toFixed(1);
+                  const titleEl = document.getElementById('hero-title');
+                  if(titleEl) titleEl.innerText = `${data.city} - ${data.date}`;
+                  
+              } else {
+                  label = `No data found for ${city} on ${date}`;
+                  showToast(data.error || 'No data found', 'warning');
+              }
+          }
+      } else {
+          label = `Server Error (Code ${res.status})`;
+          showToast(`Please restart the Node server. API route missing/error.`, 'error');
+      }
+  } catch (e) {
+      label = `Network Error`;
+      showToast('Error fetching trend: ' + e.message, 'error');
+  }
+  hideStatus();
+
+  const ctx = document.getElementById('tempChart');
+  if (!ctx) return;
   if (chartInstance) chartInstance.destroy();
 
+  const labels = Array.from({length: 24}, (_, i) => `${i.toString().padStart(2, '0')}:00`);
+
   chartInstance = new Chart(ctx, {
-    type: 'bar',
+    type: 'line',
     data: {
-      labels: ['Coldest', 'Average', 'Hottest'],
+      labels: labels,
       datasets: [{
-        label: 'Temperature (°C)',
-        data: [
-          data.coldest ? data.coldest.temp : 0,
-          data.avg_temp || 0,
-          data.hottest ? data.hottest.temp : 0
-        ],
-        backgroundColor: [
-          'rgba(0, 242, 254, 0.6)',
-          'rgba(241, 250, 140, 0.6)',
-          'rgba(255, 85, 85, 0.6)'
-        ],
-        borderColor: [
-          'rgba(0, 242, 254, 1)',
-          'rgba(241, 250, 140, 1)',
-          'rgba(255, 85, 85, 1)'
-        ],
-        borderWidth: 2,
-        borderRadius: 8
+        label: label,
+        data: plotData,
+        borderColor: '#38bdf8',
+        backgroundColor: 'rgba(56, 189, 248, 0.15)',
+        borderWidth: 3, fill: true, tension: 0.4,
+        pointBackgroundColor: '#fbbf24', pointRadius: 4
       }]
     },
     options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { display: false },
-        title: { display: true, text: 'Temperature Extremes Overview', color: '#888', font: { size: 16 } }
-      },
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: true, labels: { color: '#f8fafc' } } },
       scales: {
-        y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#888' } },
-        x: { grid: { display: false }, ticks: { color: '#fff' } }
-      },
-      animation: { duration: 1000, easing: 'easeOutQuart' }
+        y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } },
+        x: { grid: { display: false }, ticks: { color: '#94a3b8', maxTicksLimit: 12 } }
+      }
     }
   });
 }
 
-document.getElementById('btnLoad').onclick = () => api('/api/load');
-document.getElementById('btnDashboard').onclick = async () => {
-  await api('/api/dashboard');
-  switchView('visual');
-};
-document.getElementById('btnTopHot').onclick = () => {
-  api('/api/top5?type=hottest');
-  switchView('data');
-};
-document.getElementById('btnTopCold').onclick = () => {
-  api('/api/top5?type=coldest');
-  switchView('data');
-};
-document.getElementById('btnTopHotPerCity').onclick = () => {
-  api('/api/top5percity?type=hottest');
-  switchView('data');
-};
-document.getElementById('btnTopColdPerCity').onclick = () => {
-  api('/api/top5percity?type=coldest');
-  switchView('data');
-};
-document.getElementById('btnSave').onclick = () => api('/api/save');
+document.getElementById('btnFetchTrend')?.addEventListener('click', () => {
+  const c = document.getElementById('trendCityInput').value.trim();
+  const d = document.getElementById('trendDateInput').value.trim();
+  if (c && d) plotTrend(c, d);
+  else showToast('Enter both City and Date', 'warning');
+});
 
-document.getElementById('btnSearchCity').onclick = () => {
-  const q = document.getElementById('cityQ').value.trim();
-  if (!q) return showToast('Please enter a city name.', 'error');
-  api('/api/search_city?q=' + encodeURIComponent(q));
-  switchView('data');
+// Init chart at start
+setTimeout(() => plotTrend('Mumbai', '2025-12-11'), 100);
+
+// ─── ACTIONS ───────────────────────────────────────────
+document.getElementById('btnSysLoad').onclick = () => {
+  api('/api/load');
+  showToast('Dataset loaded from CSV');
+};
+document.getElementById('btnSysSave').onclick = () => {
+  api('/api/save');
+  showToast('Dataset saved to CSV');
 };
 
-document.getElementById('btnSearchDate').onclick = () => {
-  const d = document.getElementById('dateQ').value.trim();
-  if (!d) return showToast('Please enter a date.', 'error');
-  api('/api/search_date?d=' + encodeURIComponent(d));
-  switchView('data');
+document.getElementById('btnTopHotCard').onclick = () => {
+  const city = document.getElementById('top5CityInput').value.trim();
+  const url = '/api/top5?type=hottest' + (city ? '&city=' + encodeURIComponent(city) : '');
+  api(url, 'data');
+};
+document.getElementById('btnTopColdCard').onclick = () => {
+  const city = document.getElementById('top5CityInput').value.trim();
+  const url = '/api/top5?type=coldest' + (city ? '&city=' + encodeURIComponent(city) : '');
+  api(url, 'data');
+};
+document.getElementById('btnTopHotCityCard').onclick = () => api('/api/top5percity?type=hottest', 'data');
+document.getElementById('btnTopColdCityCard').onclick = () => api('/api/top5percity?type=coldest', 'data');
+
+document.getElementById('btnSearchDateCard').onclick = () => {
+  const q = document.getElementById('dateSearchInput').value.trim();
+  if (!q) return showToast('Enter date as YYYY-MM-DD', 'error');
+  api('/api/search_date?d=' + encodeURIComponent(q), 'data');
 };
 
-document.getElementById('btnStorm').onclick = () => {
-  const idx = document.getElementById('stormIdx').value.trim();
-  if (idx === '') return showToast('Please enter a city index.', 'error');
-  api('/api/storm?idx=' + encodeURIComponent(idx));
-  switchView('data');
+document.getElementById('btnSearchNav').onclick = () => {
+  const q = document.getElementById('citySearchbar').value.trim();
+  if (!q) return showToast('Enter a city name', 'error');
+  api('/api/search_city?q=' + encodeURIComponent(q), 'data');
 };
+
+document.getElementById('citySearchbar').addEventListener('keypress', e => {
+  if (e.key === 'Enter') document.getElementById('btnSearchNav').click();
+});
+document.getElementById('dateSearchInput').addEventListener('keypress', e => {
+  if (e.key === 'Enter') document.getElementById('btnSearchDateCard').click();
+});
+
+// ─── RADAR / STORM GRAPH ───────────────────────────────
+document.getElementById('btnSimulateStorm').onclick = async () => {
+  const val = document.getElementById('stormCityInput').value.trim();
+  if (!val) return showToast('Enter a city name or index (e.g. 5)', 'error');
+
+  showStatus('Building radar...');
+  try {
+    const res = await fetch('/api/storm_json?idx=' + encodeURIComponent(val));
+    if (!res.ok) {
+      showToast('Storm API returned ' + res.status, 'error');
+      hideStatus(); return;
+    }
+    const j = await res.json();
+    const raw = j.output || '';
+    const s = raw.indexOf('{'), e = raw.lastIndexOf('}');
+    if (s === -1) {
+      showToast('No graph data returned from backend', 'error');
+      hideStatus(); return;
+    }
+    const data = JSON.parse(raw.substring(s, e + 1));
+    if (data.error) { showToast(data.error, 'error'); hideStatus(); return; }
+    drawRadar(data);
+    showToast('Storm radar generated!');
+  } catch (err) {
+    showToast('Failed to connect to storm API', 'error');
+  }
+  hideStatus();
+};
+
+function drawRadar(data) {
+  const cont = document.getElementById('network-container');
+  if (!cont) return;
+
+  const nodes = [], edges = [];
+  nodes.push({
+    id: 0, label: (data.epicenter || 'Epicenter') + '\n(Impact)',
+    color: '#ef4444', font: { color: '#fff', size: 16, bold: true },
+    size: 35, shape: 'hexagon'
+  });
+
+  if (data.connected && data.connected.length > 0) {
+    data.connected.forEach((city, i) => {
+      nodes.push({
+        id: i + 1, label: city,
+        color: '#f59e0b', font: { color: '#fff', size: 13 },
+        size: 20, shape: 'dot'
+      });
+      edges.push({ from: 0, to: i + 1, color: { color: 'rgba(245,158,11,0.5)' }, width: 2, arrows: 'to' });
+    });
+  } else {
+    showToast('No connected cities impacted from this epicenter.');
+  }
+
+  const netData = { nodes: new vis.DataSet(nodes), edges: new vis.DataSet(edges) };
+  const opts = {
+    physics: { barnesHut: { gravitationalConstant: -3000, springLength: 200 } },
+    interaction: { hover: true, dragNodes: true },
+    nodes: { borderWidth: 2 },
+    width: '100%',
+    height: '100%',
+    autoResize: true
+  };
+
+  if (networkInstance) networkInstance.destroy();
+  networkInstance = new vis.Network(cont, netData, opts);
+}
+
+// ─── INIT ──────────────────────────────────────────────
+fetchDashboard();

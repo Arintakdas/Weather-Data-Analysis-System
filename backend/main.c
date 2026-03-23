@@ -1,326 +1,155 @@
 #include "weather.h"
-#include <stdio.h>
 
+// --- GLOBAL MEMORY ---
+bool is_cli_mode = false;
 WeatherRecord db[MAX_RECORDS];
 int count = 0;
 
-const char *CITY_NODES[MAX_CITIES] = {
-    "Mumbai",
-    "Delhi",
-    "Bangalore",
-    "Hyderabad",
-    "Ahmedabad",
-    "Chennai",
-    "Kolkata",
-    "Surat",
-    "Pune",
-    "Jaipur",
-    "Lucknow",
-    "Kanpur",
-    "Nagpur",
-    "Indore",
-    "Thane",
-    "Bhopal",
-    "Visakhapatnam",
-    "Pimpri-Chinchwad",
-    "Patna",
-    "Vadodara",
-    "Ghaziabad",
-    "Ludhiana",
-    "Agra",
-    "Nashik",
-    "Faridabad",
-    "Meerut",
-    "Rajkot",
-    "Kalyan-Dombivli",
-    "Vasai-Virar",
-    "Varanasi",
-    "Srinagar",
-    "Aurangabad",
-    "Dhanbad",
-    "Amritsar",
-    "Navi Mumbai",
-    "Allahabad",
-    "Ranchi",
-    "Howrah",
-    "Coimbatore",
-    "Jabalpur",
-    "Gwalior",
-    "Vijayawada",
-    "Jodhpur",
-    "Madurai",
-    "Raipur",
-    "Kota",
-    "Chandigarh",
-    "Guwahati",
-    "Solapur",
-    "Hubli-Dharwad",
-    "Tiruchirappalli",
-    "Bareilly",
-    "Mysore",
-    "Tiruppur",
-    "Gurgaon",
-    "Aligarh",
-    "Jalandhar",
-    "Bhubaneswar",
-    "Salem",
-    "Mira-Bhayandar",
-    "Warangal",
-    "Thiruvananthapuram",
-    "Guntur",
-    "Bhiwandi",
-    "Saharanpur",
-    "Gorakhpur",
-    "Bikaner",
-    "Amravati",
-    "Noida",
-    "Jamshedpur",
-    "Bhilai",
-    "Cuttack",
-    "Firozabad",
-    "Kochi",
-    "Nellore",
-    "Bhavnagar",
-    "Dehradun",
-    "Durgapur",
-    "Asansol",
-    "Rourkela",
-    "Nanded",
-    "Kolhapur",
-    "Ajmer",
-    "Akola",
-    "Gulbarga",
-    "Jamnagar",
-    "Ujjain",
-    "Loni",
-    "Siliguri",
-    "Jhansi",
-    "Ulhasnagar",
-    "Jammu",
-    "Sangli-Miraj",
-    "Mangalore",
-    "Erode",
-    "Belgaum",
-    "Ambattur",
-    "Tirunelveli",
-    "Malegaon",
-    "Gaya",
-    "Jalgaon",
-    "Udaipur",
-    "Maheshtala",
-    "Davanagere",
-    "Kozhikode",
-    "Kurnool",
-    "Rajpur Sonarpur",
-    "Rajahmundry",
-    "Bokaro",
-    "South Dumdum",
-    "Bellary",
-    "Patiala",
-    "Gopalpur",
-    "Agartala",
-    "Bhagalpur",
-    "Muzaffarnagar",
-    "Bhatpara",
-    "Panihati",
-    "Latur",
-    "Dhule",
-    "Tirupati",
-    "Rohtak",
-    "Korba",
-    "Bhilwara",
-    "Berhampur",
-    "Muzaffarpur",
-    "Ahmednagar",
-    "Mathura",
-    "Kollam",
-    "Avadi",
-    "Kadapa",
-    "Kamarhati",
-    "Sambalpur",
-    "Bilaspur",
-    "Shahjahanpur",
-    "Satara",
-    "Bijapur",
-    "Rampur",
-    "Shivamogga",
-    "Chandrapur",
-    "Junagadh",
-    "Thrissur",
-    "Alwar",
-    "Bardhaman",
-    "Kulti",
-    "Kakinada",
-    "Nizamabad",
-    "Parbhani",
-    "Tumkur",
-    "Khammam",
-    "Ozhukarai",
-    "Bihar Sharif",
-    "Panipat",
-    "Darbhanga",
-    "Bally",
-    "Aizawl",
-    "Dewas",
-    "Ichalkaranji",
-    "Karnal",
-    "Bathinda",
-    "Jalna",
-    "Eluru",
-    "Kirari Suleman Nagar",
-    "Barasat",
-    "Purnia",
-    "Satna",
-    "Mau",
-    "Sonipat",
-    "Farrukhabad",
-    "Sagar",
-    "Rourkela",
-    "Durg",
-    "Imphal",
-    "Ratlam",
-    "Hapur",
-    "Arrah",
-    "Karimnagar",
-    "Anantapur",
-    "Etawah",
-    "Ambernath",
-    "North Dumdum",
-    "Bharatpur",
-    "Begusarai",
-    "New Delhi",
-    "Gandhidham",
-    "Baranagar",
-    "Tiruvottiyur",
-    "Puducherry",
-    "Sikar",
-    "Thoothukudi",
-    "Rewa",
-    "Mirzapur",
-    "Raichur",
-    "Pali",
-    "Ramagundam",
-    "Haridwar",
-    "Vijayanagaram",
-    "Katihar",
-    "Naihati",
-    "Sambhal",
-    "Nadiad",
-    "Yamunanagar",
-    "English Bazar",
-    "Unnao",
-    "Khandwa",
-    "Morbi",
-    "Bhusawal",
-    "Orai",
-    "Bahraich",
-    "Vellore",
-    "Mahesana",
-    "Sambalpur",
-    "Raiganj",
-    "Sirsa",
-    "Danapur",
-    "Serampore",
-    "Sultan Pur Majra",
-    "Guna",
-    "Jaunpur",
-    "Panvel",
-    "Shivpuri",
-    "Surendranagar Dudhrej",
-    "Unnao",
-    "Hugli-Chinsurah",
-    "Alappuzha",
-    "Kottayam",
+// Dynamic Graph Memory (Matches weather.h definition)
+char CITY_NODES[MAX_CITIES][CITY_LEN];
+int uniqueCityCount = 0;
+int adjMatrix[MAX_CITIES][MAX_CITIES];
 
-};
+// --- UI HELPERS ---
+void clearScreen() {
+    #ifdef _WIN32
+        system("cls");
+    #else
+        system("clear");
+    #endif
+}
 
-int adjMatrix[MAX_CITIES][MAX_CITIES] = {0};
+void pause() {
+    printf("\n" BOLD "[PRESS ENTER TO CONTINUE]" COLOR_RESET);
+    int c; while ((c = getchar()) != '\n' && c != EOF) { } // Clear buffer
+    getchar();
+}
 
-void initializeAdjacencyMatrix() {
-  adjMatrix[0][8] = 1;
-  adjMatrix[0][23] = 1;
-adjMatrix[0][14] = 1; 
+void showDashboard() {
+    if (count == 0) { printf("No data loaded.\n"); return; }
+    printf("\n" BOLD "--- LIVE DASHBOARD (Last 20 Records) ---" COLOR_RESET "\n");
+    printf("%-12s | %-20s | %-25s\n", "Date", "City", "Visual Trend");
+    printf("----------------------------------------------------------------\n");
 
-  adjMatrix[1][54] = 1;
-  adjMatrix[1][68] = 1;
-  adjMatrix[1][20] = 1;
-  adjMatrix[1][24] = 1;
+    int start = (count > 20) ? count - 20 : 0;
+    for (int i = start; i < count; i++) {
+        int bars = (int)db[i].temperature / 2;
+        printf("%-12s | %-20s | ", db[i].date, db[i].city);
+        if (db[i].temperature > 30) printf(COLOR_RED);
+        else if (db[i].temperature < 20) printf(COLOR_CYAN);
+        else printf(COLOR_GREEN);
 
-  adjMatrix[2][52] = 1;
+        if (bars > 20) bars = 20;
+        for(int j=0; j<bars; j++) printf("█");
+        printf(COLOR_RESET " %.1f C\n", db[i].temperature);
+    }
+}
+
+// --- FRONTEND LOGIC (Switch Case) ---
+void runFrontend() {
+  int choice;
+  while (1) {
+    clearScreen();
+    printf("\n======================================================\n");
+    printf(BOLD "       WEATHER ANALYTICS - SYSTEM FRONTEND       " COLOR_RESET "\n");
+    printf("======================================================\n");
+    printf("1. Reload Data (CSV)\n");
+    printf("2. Show Dashboard\n");
+    printf("3. Add New Record\n");
+    printf("4. Search by City\n");
+    printf("5. Search by Date\n");
+    printf("6. Top 5 Hottest\n");
+    printf("7. Top 5 Coldest\n");
+    printf("8. Predict Weather (AI)\n");
+    printf("9. Storm Warning (Graph)\n");
+    printf("10. Save & Exit\n");
+    printf("------------------------------------------------------\n");
+    printf("Records: %d | Cities: %d\n", count, uniqueCityCount);
+    printf("Enter Choice: ");
+
+    if (scanf("%d", &choice) != 1) {
+      while (getchar() != '\n');
+      continue;
+    }
+
+    switch (choice) {
+      case 1:
+        loadCSV();
+        initGraphFromData(); // Re-generate graph on reload
+        pause();
+        break;
+      case 2: showDashboard(); pause(); break;
+      case 3:
+          if (count < MAX_RECORDS) {
+              WeatherRecord r; r.id = 101 + count;
+              printf("Enter City: "); scanf("%s", r.city);
+              printf("Enter Temp: "); scanf("%f", &r.temperature);
+              printf("Enter Hum: "); scanf("%d", &r.humidity);
+              printf("Enter Date: "); scanf("%s", r.date);
+              db[count++] = r;
+              initGraphFromData(); // Update graph
+              printf(COLOR_GREEN "Saved.\n" COLOR_RESET);
+          } else printf("Full.\n");
+          pause(); break;
+      case 4: { char q[50]; printf("City: "); scanf("%s", q); searchRecords(q); pause(); break; }
+      case 5: { char d[20]; printf("Date: "); scanf("%s", d); binarySearchByDate(d); pause(); break; }
+      case 6: showTop5(true); pause(); break;
+      case 7: showTop5(false); pause(); break;
+      case 8: predictWeather(); pause(); break;
+      case 9: showStormImpact(); pause(); break;
+      case 10: saveCSV(); printf("Exiting...\n"); return;
+      default: printf("Invalid.\n"); pause(); break;
+    }
+  }
 }
 
 int main(int argc, char *argv[]) {
-  initializeAdjacencyMatrix();
+    // If CLI arguments are provided, bypass menu and respond immediately (Frontend Integration)
+    if (argc > 1) {
+        is_cli_mode = true;
+    }
 
-  if (argc < 2) {
+    // 1. Load Data
+    loadCSV();
+
+    // 2. Build Graph from Data
+    initGraphFromData();
+
+    if (is_cli_mode) {
+        if (strcmp(argv[1], "dashboard") == 0) {
+            showDashboard();
+        } else if (strcmp(argv[1], "dashboard_json") == 0) {
+            generateDashboardJSON();
+        } else if (strcmp(argv[1], "search_city") == 0 && argc > 2) {
+            searchRecords(argv[2]);
+        } else if (strcmp(argv[1], "search_date") == 0 && argc > 2) {
+            binarySearchByDate(argv[2]);
+        } else if (strcmp(argv[1], "top5") == 0 && argc > 2) {
+            showTop5(strcmp(argv[2], "hottest") == 0);
+        } else if (strcmp(argv[1], "top5_city_records") == 0 && argc > 3) {
+            showTop5city_records(strcmp(argv[2], "hottest") == 0, argv[3]);
+        } else if (strcmp(argv[1], "top5percity") == 0 && argc > 2) {
+            showTop5PerCity(strcmp(argv[2], "hottest") == 0);
+        } else if (strcmp(argv[1], "storm") == 0 && argc > 2) {
+            showStormImpactForCity(argv[2]);
+        } else if (strcmp(argv[1], "storm_json") == 0 && argc > 2) {
+            initGraphFromData();
+            showStormImpactForCityJSON(argv[2]);
+        } else if (strcmp(argv[1], "trend_json") == 0 && argc > 3) {
+            showTrendJSON(argv[2], argv[3]);
+        } else if (strcmp(argv[1], "load") == 0) {
+            printf("Data Loaded Successfully.\n");
+        } else if (strcmp(argv[1], "save") == 0) {
+            saveCSV();
+            printf("Data Saved Successfully.\n");
+        } else {
+            printf("[FAIL] Unknown command or missing arguments.\n");
+        }
+        return 0;
+    }
+
+    // 3. Start Interface (Terminal User Mode)
     runFrontend();
+
     return 0;
-  }
-
-  char *cmd = argv[1];
-
-  if (strcmp(cmd, "dashboard") == 0) {
-    loadCSV();
-    showDashboard();
-  } else if (strcmp(cmd, "dashboard_json") == 0) {
-    loadCSV();
-    printDashboardJSON();
-  } else if (strcmp(cmd, "load") == 0) {
-    loadCSV();
-  } else if (strcmp(cmd, "save") == 0) {
-    loadCSV();
-    saveCSV();
-  } else if (strcmp(cmd, "search_city") == 0) {
-    loadCSV();
-    if (argc >= 3) {
-      searchRecords(argv[2]);
-    } else {
-      printf("Usage: search_city <city_name>\n");
-    }
-  } else if (strcmp(cmd, "search_date") == 0) {
-    loadCSV();
-    if (argc >= 3) {
-      binarySearchByDate(argv[2]);
-    } else {
-      printf("Usage: search_date <YYYY-MM-DD>\n");
-    }
-  } else if (strcmp(cmd, "top5") == 0) {
-    loadCSV();
-    if (argc >= 3) {
-      bool hottest = (strcmp(argv[2], "hottest") == 0);
-      showTop5(hottest);
-    } else {
-      showTop5(true);
-    }
-  } else if (strcmp(cmd, "top5percity") == 0) {
-    loadCSV();
-    if (argc >= 3) {
-      bool hottest = (strcmp(argv[2], "hottest") == 0);
-      showTop5PerCity(hottest);
-    } else {
-      showTop5PerCity(true);
-    }
-  } else if (strcmp(cmd, "storm") == 0) {
-    if (argc >= 3) {
-      int idx = atoi(argv[2]);
-      printf("%d", idx);
-      getchar();
-      showStormImpactAt(idx);
-    } else {
-      printf("Usage: storm <city_index>\n");
-    }
-  } else {
-    printf("Unknown command: %s\n", cmd);
-    printf("Available commands:\n");
-    printf("  dashboard\n");
-    printf("  load\n");
-    printf("  save\n");
-    printf("  search_city <name>\n");
-    printf("  search_date <YYYY-MM-DD>\n");
-    printf("  top5 <hottest|coldest>\n");
-    printf("  top5percity <hottest|coldest>\n");
-    printf("  storm <index>\n");
-  }
-
-  return 0;
 }
